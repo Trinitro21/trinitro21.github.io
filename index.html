@@ -1,9 +1,496 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<title>trinitro21.github.io</title>
+		<meta charset="UTF-8">
+		<title>
+			SmileBASIC Tools
+		</title>
+		<link rel="icon" type="image/png" href="1TXT.png"/>
+		<link rel="stylesheet" type="text/css" href="style.css">
+		<script src="sblib.js"></script>
 	</head>
-	<body>
-		I didn't put anything here yet
+	<body style="background-color:#fff;font-family:Arial;color:#000;">
+		<div id="headerdiv"><h2>SmileBASIC Tools</h2>
+		<a href="imagetogrp.html">A quick image to GRP converter</a></div>
+		<ul>
+			<li>
+				Edit: <input type="file" id="f" onchange="loadit(0)"><br>
+				Create:
+				<input type="button" onclick="loadit(1)" value="TXT">
+				<input type="button" onclick="loadit(2)" value="GRP">
+				<input type="button" onclick="loadit(3)" value="DAT">
+			</li>
+			<li style="display:none;" id="mainli">
+			    Altering the type<span id="labeltype" style="display:none;"> or DAT header</span> will affect how SmileBASIC loads or runs the file, and how this tool interprets and saves the file
+				<table>
+    				<tr>
+    				    <td>Type(TXT or DAT):</td>
+    				    <td>
+    				        <select id="type" onchange="updateli()" onblur="updateli()">
+								<option value="TXT">TXT</option>
+								<option value="DAT">DAT</option>
+							</select>
+    				    </td>
+	    			</tr>
+				    <tr>
+				        <td>Icon:</td>
+					    <td>
+					        <input type="number" maxlength="1" id="icon" style="width:3em;vertical-align:middle;" onchange="updateimg()" onblur="updateimg()">
+				    	    <img id="iconpic" width="24px" height="24px" style="vertical-align:middle;">
+				    	</td>
+				    </tr>
+				    <tr>
+				        <td>Size:</td>
+				        <td>
+				            <input type="number" id="size" style="width:6rem;">
+				        </td>
+				    </tr>
+				    <tr>
+				        <td>Last modified:</td>
+					    <td>
+					        <input type="number" placeholder="" maxlength="4" id="yr" style="width:5em;">/<input type="number" placeholder="" maxlength="2" id="mn" style="width:3em;">/<input type="number" placeholder="" maxlength="2" id="dy" style="width:3em;">
+					        <input type="number" placeholder="" maxlength="2" id="hr" style="width:3em;">:<input type="number" placeholder="" maxlength="2" id="mi" style="width:3em;">:<input type="number" placeholder="" maxlength="2" id="sc" style="width:3em;">
+				        </td>
+				    </tr>
+				    <tr>
+				        <td>First Author (not displayed):</td>
+				        <td>
+				            <input type="text" maxlength="18" id="auth1" style="width:18em;">
+				        </td>
+				    </tr>
+				    <tr>
+				        <td>Blacklist ID:</td>
+				        <td>
+				            <input type="number" id="bl1" style="width:6rem;">
+				        </td>
+				    </tr>
+				    <tr>
+				        <td>Second Author (displayed):</td>
+				        <td>
+				            <input type="text" maxlength="18" id="auth2" style="width:18em;">
+				        </td>
+				    </tr>
+				    <tr>
+				        <td>Blacklist ID:</td>
+				        <td>
+				            <input type="number" placeholder="Blacklist ID 2" id="bl2" style="width:6rem;">
+				        </td>
+				    </tr>
+				</table>
+			</li>
+			<li style="display:none;" id="datli">
+				<table>
+				    <tr>
+				        <td>Type:</td>
+				        <td>
+				            <select id="typedat">
+								<option value="col">col</option>
+								<option value="int">int</option>
+								<option value="real">real</option>
+							</select>
+				        </td>
+				    </tr>
+				    <tr>
+				        <td>Number of dimensions:</td>
+				        <td>
+				            <select onchange="updatearray()" id="dimdat">
+								<option value="1">1</option>
+								<option value="2">2</option>
+								<option value="3">3</option>
+								<option value="4">4</option>
+							</select>
+				        </td>
+				    </tr>
+				    <tr>
+				        <td>Dimensions:</td>
+				        <td>
+				            <input type="number" onchange="updatearray()" id="dimdat0" style="width:6rem;">x<!--html comments remove the space that gets inserted when you press enter
+							--><input type="number" onchange="updatearray()" id="dimdat1" style="width:6rem;">x<!--
+							--><input type="number" onchange="updatearray()" id="dimdat2" style="width:6rem;">x<!--
+							--><input type="number" onchange="updatearray()" id="dimdat3" style="width:6rem;">
+				        </td>
+				    </tr>
+				</table>
+			</li>
+			<li style="display:none;" id="makedatli">
+				<input type="button" onclick="confirmdat()" value="Confirm">
+			</li>
+			<li style="display:none;" id="editli">
+				<textarea id="textedit" style="width:calc(100% - 6px);width:-webkit-calc(100% - 6px);height:90vh;"></textarea><br>
+				<input id="jsconsole" type="text" placeholder="Enter command here" style="display:none;">
+				<div id="canvasplace">
+					<br><br><button id="downloadimage" onclick="downloaddatimage()">Download image</button><br>
+					Upload image:<input type="file" id="uploadimage" onchange="uploaddatimage()">
+					<br>
+					<canvas id="can">Stop using IE4</canvas>
+				</div>
+			</li>
+			<li style="display:none;" id="submitli">
+				<span id="downloadprefix">T</span><input type="text" id="downloadname" maxlength="14"><br>
+				<input type="button" id="apply" value="Download" onclick="apply()"><br>
+				<a id="dl" style="display:none;">Download</a>
+			</li>
+		</ul>
+		<script>
+		    var reader=new FileReader;
+			function updateimg(){
+				var a=document.getElementById("icon").value;
+				var b=document.getElementById("type").value;
+				
+				document.getElementById("iconpic").src=a+b+".png";
+			}
+			function updateli(){
+				if(document.getElementById("type").value=="DAT"){
+					document.getElementById("datli").style="";document.getElementById("submitli").style="";
+					document.getElementById("labeltype").setAttribute("style","");
+					document.getElementById("downloadprefix").textContent="B";
+				}else{
+					document.getElementById("datli").style="display:none;";
+					document.getElementById("labeltype").setAttribute("style","display:none;");
+					document.getElementById("downloadprefix").textContent="T";
+				}
+			}
+			function dojs(s){
+				try{
+					document.getElementById("textedit").value+="\n"+eval(s);
+				}catch(e){
+					document.getElementById("textedit").value+="\n"+e.name;
+				}
+				document.getElementById("jsconsole").value="";
+				document.getElementById("textedit").scrollTop=document.getElementById("textedit").scrollHeight;
+				if(document.getElementById("typedat").value=="col" && dim.length==2){updatecanvas();}
+			}
+			function updatearray(){
+				var numdim=document.getElementById("dimdat").value;
+				dim=[];
+				for(m=0;m<numdim;m++){
+					dim.push(document.getElementById("dimdat"+m).value);
+				}
+				if(document.getElementById("typedat").value=="col" && dim.length==2){
+					updatecanvas();
+				}
+			}
+			function updatecanvas(){
+				can=document.getElementById("can");
+				document.getElementById("canvasplace").setAttribute("style","");
+				can.width=dim[0];
+				can.height=dim[1];
+				c2d=can.getContext("2d");
+				data=c2d.getImageData(0,0,dim[0],dim[1]);
+				for(n=0;n<dim[0];n++){
+					for(m=0;m<dim[1];m++){
+						index=(n+m*dim[0])*4;
+						data.data[index]=dat[m][n].red;
+						data.data[index+1]=dat[m][n].green;
+						data.data[index+2]=dat[m][n].blue;
+						data.data[index+3]=dat[m][n].alpha;
+					}
+				}
+				c2d.putImageData(data,0,0);
+			}
+			function downloaddatimage(){
+				document.getElementById("dl").href=document.getElementById("can").toDataURL();
+				n=document.getElementById("downloadprefix").textContent+document.getElementById("downloadname").value;
+				if(n.length<=1){
+					filename=document.getElementById("f").value;
+					n="";
+					while(filename.length>0 && filename.substring(filename.length-1,filename.length)!="/" && filename.substring(filename.length-1,filename.length)!="\\"){
+						n=filename.substring(filename.length-1,filename.length)+n;
+						filename=filename.substring(0,filename.length-1);
+					}
+				}
+				document.getElementById("dl").download=n+".png";
+				document.getElementById("dl").click();
+			}
+			function uploaddatimage(){
+				var z=new Image;
+				reader.readAsDataURL(document.getElementById("uploadimage").files[0]);
+				reader.onload=function(){
+					z.onload=function(){
+						var can=document.getElementById("can");
+						var c2d=can.getContext("2d");
+						c2d.drawImage(z,0,0);
+						data=c2d.getImageData(0,0,dim[0],dim[1]);
+						for(n=0;n<dat.length;n++){
+							for(m=0;m<dat[n].length;m++){
+								index=(n+m*dim[0])*4;
+								dat[m][n].red=data.data[index];
+								dat[m][n].green=data.data[index+1];
+								dat[m][n].blue=data.data[index+2];
+								dat[m][n].alpha=data.data[index+3];
+							}
+						}
+					};
+					z.src=reader.result;
+				}
+			}
+			function loadit(mode){
+				if(mode==0){
+					reader.readAsArrayBuffer(f.files[0]);
+					reader.onload=function(){
+						arraybuff=reader.result;
+						file=new Uint8Array(arraybuff);
+						filename=document.getElementById("f").value;
+						n="";
+						while(filename.length>0 && filename.substring(filename.length-1,filename.length)!="/" && filename.substring(filename.length-1,filename.length)!="\\"){
+							n=filename.substring(filename.length-1,filename.length)+n;
+							filename=filename.substring(0,filename.length-1);
+						}
+						if(n[0]=="T" || n[0]=="B"){
+							document.getElementById("downloadname").value=n.substring(1);
+						}else{
+							document.getElementById("downloadname").value=n;
+						}
+						load();
+					}
+				}else if(mode==1){
+					arraybuff=new ArrayBuffer(100);
+					file=new Uint8Array(arraybuff);
+					hextoarray("01 00 00 00 00 00 01 00 00 00 00 00 DF 07 0A 0F 00 00 00 04 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00",0);
+					hextoarray("53 4D 49 4C 45 42 41 53 49 43 54 4F 4F 4C 53 20 46 4F 4F 54",80);
+					load();
+				}else if(mode==2){
+					arraybuff=new ArrayBuffer(524416);
+					file=new Uint8Array(arraybuff);
+					hextoarray("01 00 01 00 00 00 02 00 1C 00 08 00 DF 07 0A 0F 00 00 00 04 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 50 43 42 4E 30 30 30 31 03 00 02 00 00 02 00 00 00 02 00 00 30 37 2B 00 CC 1C 2E 00",0);
+					hextoarray("53 4D 49 4C 45 42 41 53 49 43 54 4F 4F 4C 53 20 46 4F 4F 54",524396);
+					load();
+				}else if(mode==3){
+					document.getElementById("datli").setAttribute("style","");
+					document.getElementById("editli").setAttribute("style","display:none;");
+					document.getElementById("mainli").setAttribute("style","display:none;");
+					document.getElementById("submitli").setAttribute("style","display:none;");
+					document.getElementById("makedatli").setAttribute("style","");
+				}
+			}
+			function confirmdat(){
+				ty=document.getElementById("typedat").value;
+				var size=(ty=="col"?2:(ty=="int"?4:(ty=="real"?8:"unk")));
+				if(size=="unk"){return;}
+				var numdim=document.getElementById("dimdat").value;
+				dim=[];
+				for(m=0;m<numdim;m++){
+					dim.push(document.getElementById("dimdat"+m).value);
+					size=size*dim[m];
+				}
+				
+				arraybuff=new ArrayBuffer(size+128);
+				file=new Uint8Array(arraybuff);
+				hextoarray("01 00 01 00 00 00 00 00 1C 00 08 00 DF 07 0A 0F 00 00 00 04 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 50 43 42 4E 30 30 30 31",0);
+				hextoarray("53 4D 49 4C 45 42 41 53 49 43 54 4F 4F 4C 53 20 46 4F 4F 54",524396);
+				
+				document.getElementById("makedatli").setAttribute("style","display:none;");
+				document.getElementById("editli").setAttribute("style","");
+				document.getElementById("mainli").setAttribute("style","");
+				document.getElementById("submitli").setAttribute("style","");
+				if(ty=="col"){
+					insertnum(3,1,88);
+				}else if(ty=="int"){
+					insertnum(4,1,88);
+				}else if(ty=="real"){
+					insertnum(5,1,88);
+				}
+				insertnum(document.getElementById("dimdat").value,1,90);
+				for(m=0;m<readnum(90,90);m++){
+					insertnum(document.getElementById("dimdat"+m).value,4,92+4*m);
+				}
+				
+				load();
+			}
+			function load(){
+				document.getElementById("makedatli").setAttribute("style","display:none;");
+				document.getElementById("mainli").setAttribute("style","");
+				document.getElementById("editli").setAttribute("style","");
+				document.getElementById("submitli").setAttribute("style","");
+				t=readnum(2,2);
+				if(t==0){document.getElementById("type").value="TXT";}else{document.getElementById("type").value="DAT";}
+				updateli();
+				document.getElementById("icon").value=readnum(6,6);
+				updateimg();
+				document.getElementById("size").value=readnum(8,11);
+				document.getElementById("yr").value=readnum(12,13);
+				document.getElementById("mn").value=readnum(14,14);
+				document.getElementById("dy").value=readnum(15,15);
+				document.getElementById("hr").value=readnum(16,16);
+				document.getElementById("mi").value=readnum(17,17);
+				document.getElementById("sc").value=readnum(18,18);
+				
+				document.getElementById("auth1").value=readstring(20,37);
+				document.getElementById("auth2").value=readstring(38,55);
+				document.getElementById("bl1").value=readnum(56,59);
+				document.getElementById("bl2").value=readnum(60,63);
+				if(document.getElementById("type").value=="DAT"){
+					t=readnum(88,88);
+					if(t==3){
+						document.getElementById("typedat").value="col";
+					}else if(t==4){
+						document.getElementById("typedat").value="int";
+					}else if(t==5){
+						document.getElementById("typedat").value="real";
+					}else{
+						document.getElementById("typedat").value="unk";
+					}
+					document.getElementById("dimdat").value=readnum(90,90);
+					dim=[];
+					for(m=0;m<readnum(90,90);m++){
+						document.getElementById("dimdat"+m).value=readnum(92+4*m,92+4*m+3);
+						dim.push(document.getElementById("dimdat"+m).value);
+					}
+				}
+				if(readnum(2,2)){
+					//parse DAT to array
+					dat=[];
+					for(var x=0;x<dim[0];x++){
+						if(dim.length>1){
+							dat[x]=[];
+							for(var y=0;y<dim[1];y++){
+								if(dim.length>2){
+									dat[x][y]=[];
+									for(var z=0;z<dim[2];z++){
+										if(dim.length>3){
+											dat[x][y][z]=[];
+											for(var w=0;w<dim[3];w++){
+												dat[x][y][z][w]=getdatnum(document.getElementById("typedat").value,dim,[x,y,z,w]);
+											}
+										}else{
+											dat[x][y][z]=getdatnum(document.getElementById("typedat").value,dim,[x,y,z]);
+										}
+									}
+								}else{
+									dat[x][y]=getdatnum(document.getElementById("typedat").value,dim,[x,y]);
+								}
+							}
+						}else{
+							dat[x]=getdatnum(document.getElementById("typedat").value,dim,[x]);
+						}
+					}
+					document.getElementById("jsconsole").setAttribute("style","width:calc(100% - 6px);width:-webkit-calc(100% - 6px);");
+					document.getElementById("jsconsole").setAttribute("onkeydown","if(!event.shiftKey && event.keyCode==13){event.preventDefault();dojs(document.getElementById('jsconsole').value);}");
+					document.getElementById("textedit").style.height="7rem";
+					document.getElementById("textedit").value=
+						"This is a javascript console for editing the DAT file as an array\
+						\nElements in the array can be accessed with 'dat"
+						+"[x][y][z][w]".substring(0,dim.length*3)+"'";
+					if(document.getElementById("typedat").value=="col"){document.getElementById("textedit").value+=
+						"\nColors have 'red', 'green', 'blue', and 'alpha' properties\
+						\nKeep in mind that x and y are switched relative to the image displayed";}
+					if(document.getElementById("typedat").value=="col" && dim.length==2){
+						updatecanvas();
+					}else{
+						//hide the canvas
+						document.getElementById("canvasplace").setAttribute("style","display:none;");
+					}
+				}else{
+					//hide the canvas
+					document.getElementById("canvasplace").setAttribute("style","display:none;");
+					document.getElementById("jsconsole").setAttribute("style","display:none;");
+					//put text in editor
+					document.getElementById("textedit").style.height="90vh";
+					document.getElementById("textedit").setAttribute("onkeydown","");
+					document.getElementById("textedit").value=readstring(80,file.length-21);
+				}
+			}
+			//http://stackoverflow.com/questions/20486053/comparison-resizing-arraybuffer-with-buffer-views-uint8-vs-float64-am-i-miss
+			function resizeUint8(baseArrayBuffer, newByteSize) {
+				var resizedArrayBuffer = new ArrayBuffer(newByteSize),
+					len = baseArrayBuffer.byteLength,
+					resizeLen = (len > newByteSize)? newByteSize : len;
+				
+				(new Uint8Array(resizedArrayBuffer, 0, resizeLen)).set(new Uint8Array(baseArrayBuffer, 0, resizeLen));
+				
+				return resizedArrayBuffer;
+			}
+			function apply(){
+				if(document.getElementById("type").value!="DAT"){
+					t=0;
+					var text=document.getElementById("textedit").value.replace(/\n/g,String.fromCharCode(10));
+					foot=readstring(file.length-20,file.length-1);
+					if(file.length!=text.length+100){
+						arraybuff=resizeUint8(arraybuff,text.length+100);
+						file=new Uint8Array(arraybuff);
+					}
+					inserttext(text,text.length,80);
+					inserttext(foot,20,text.length+80);
+					//if(file.length>text.length+100){arraybuff=arraybuff.slice(0,text.length+100);}
+				}else{
+					t=1;
+					type=document.getElementById("typedat").value;
+					foot=readstring(file.length-20,file.length-1);
+					var size=(type=="col"?2:(type=="int"?4:(type=="real"?8:"unk")));
+					for(i=0;i<dim.length;i++){size=size*dim[i];}
+					if(file.length!=size+128){
+						arraybuff=resizeUint8(arraybuff,size+128);
+						file=new Uint8Array(arraybuff);
+					}
+					for(var x=0;x<dim[0];x++){
+						if(dim.length>1){
+							for(var y=0;y<dim[1];y++){
+								if(dim.length>2){
+									for(var z=0;z<dim[2];z++){
+										if(dim.length>3){
+											for(var w=0;w<dim[3];w++){
+												setdatnum(dat[x][y][z][w],type,dim,[x,y,z,w]);
+											}
+										}else{
+											setdatnum(dat[x][y][z],type,dim,[x,y,z]);
+										}
+									}
+								}else{
+									setdatnum(dat[x][y],type,dim,[x,y]);
+								}
+							}
+						}else{
+							setdatnum(dat[x],type,dim,[x]);
+						}
+					}
+					var size=(type=="col"?2:(type=="int"?4:(type=="real"?8:"unk")));
+					for(i=0;i<dim.length;i++){size=size*dim[i];}
+					inserttext(foot,20,size+108);
+					//if(file.length>size+128){arraybuff=arraybuff.slice(0,size+128);}
+				}
+				insertnum(t,1,2);
+				insertnum(document.getElementById("icon").value,1,6);
+				
+				insertnum(document.getElementById("size").value,4,8);
+				insertnum(document.getElementById("yr").value,2,12);
+				insertnum(document.getElementById("mn").value,1,14);
+				insertnum(document.getElementById("dy").value,1,15);
+				insertnum(document.getElementById("hr").value,1,16);
+				insertnum(document.getElementById("mi").value,1,17);
+				insertnum(document.getElementById("sc").value,1,18);
+				
+				inserttext(document.getElementById("auth1").value,18,20);
+				inserttext(document.getElementById("auth2").value,18,38);
+				insertnum(document.getElementById("bl1").value,4,56);
+				insertnum(document.getElementById("bl2").value,4,60);
+				
+				if(t==1){
+				    ty=document.getElementById("typedat").value;
+				    if(ty=="col"){
+				        insertnum(3,1,88);
+				    }else if(ty=="int"){
+				        insertnum(4,1,88);
+				    }else if(ty=="real"){
+				        insertnum(5,1,88);
+				    }
+					insertnum(document.getElementById("dimdat").value,1,90);
+					for(m=0;m<readnum(90,90);m++){
+						insertnum(document.getElementById("dimdat"+m).value,4,92+4*m);
+					}
+				}
+				
+				n=document.getElementById("downloadprefix").textContent+document.getElementById("downloadname").value;
+				if(n.length<=1){
+					filename=document.getElementById("f").value;
+					n="";
+					while(filename.length>0 && filename.substring(filename.length-1,filename.length)!="/" && filename.substring(filename.length-1,filename.length)!="\\"){
+						n=filename.substring(filename.length-1,filename.length)+n;
+						filename=filename.substring(0,filename.length-1);
+					}
+				}
+				
+				downloadfile(file,n);
+			}
+		</script>
 	</body>
 </html>

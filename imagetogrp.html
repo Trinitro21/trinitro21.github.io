@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>
+			SmileBASIC Image to GRP Tool
+		</title>
+		<link rel="icon" type="image/png" href="1TXT.png"/>
+		<link rel="stylesheet" type="text/css" href="style.css">
+		<script src="sblib.js"></script>
+	</head>
+	<body style="background-color:#fff;font-family:Arial;color:#000;">
+		<div id="headerdiv"><h2>SmileBASIC Image to GRP Tool</h2><a href="//github.com/Perska/IMG2GRP/releases/">Here's a command line tool made by Perska</a></div>
+		<ul>
+			<li>
+				<input type="file" id="f" onchange="loadimg()">
+			</li>
+			<li id="canvasli" style="display:none;">
+		        <canvas id="c">Get a better browser, scrub. No GRP for you.</canvas>
+			</li>
+			<li style="display:none;" id="submitli">
+		        Name: B<input type="text" maxlength="14" id="name" style="width:13em;"><br>
+				<input type="button" id="down" value="Download" onclick="downloadit()"><br>
+				<a id="dl" style="display:none;">Download</a>
+			</li>
+		</ul>
+		<script>
+		    var reader=new FileReader;
+			function loadimg(){
+				var z=new Image;
+				reader.readAsDataURL(f.files[0]);
+				reader.onload=function(){
+					z.onload=function(){
+						document.getElementById("canvasli").setAttribute("style","");
+						c.width=z.width;
+						c.height=z.height;
+						if(c.width>512){c.width=512;}
+						if(c.height>512){c.height=512;}
+						c2d=c.getContext("2d");
+						c2d.drawImage(z,0,0);
+						
+						document.getElementById("submitli").setAttribute("style","");
+					};
+					z.src=reader.result;
+				}
+			}
+			function downloadit(){
+				down.value="Converting...";
+				window.setTimeout(function(){
+					
+					file=new Uint8Array(524416);
+					hextoarray("01 00 01 00 00 00 02 00 1C 00 08 00 DF 07 0A 0F 00 00 00 04 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 50 43 42 4E 30 30 30 31 03 00 02 00 00 02 00 00 00 02 00 00 30 37 2B 00 CC 1C 2E 00",0);
+					hextoarray("53 4D 49 4C 45 42 41 53 49 43 20 47 52 50 46 4F 4F 54 45 52",524396);
+					
+					var data=c2d.getImageData(0,0,c.width,c.height).data;
+					var i=0;
+					for(y=0;y<c.height;y++){
+						for(x=0;x<c.width;x++){
+							p=[data[i],data[i+1],data[i+2],data[i+3]];
+							colortoarray(p,108+x*2+y*2*512);
+							i+=4;
+						}
+					}
+					
+					downloadfile(file,"B"+document.getElementById("name").value);
+				},120);
+				down.value="Download";
+				
+			}
+			function colortoarray(p,pos){
+				var sum=Math.floor(p[0]*31/255)*Math.pow(2,11)+Math.floor(p[1]*31/255)*Math.pow(2,6)+Math.floor(p[2]*31/255)*2+Math.floor(p[3]/255);
+				file[pos]=(sum & 255);
+				file[pos+1]=(sum-(sum & 255))/256;
+			}
+		</script>
+	</body>
+</html>
